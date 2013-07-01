@@ -76,6 +76,15 @@ TEST(hexparser, test_extended_linear_record_identifcation)
     LONGS_EQUAL(EXTENDED_LINEAR_ADDRESS_RECORD, record.type);
 }
 
+TEST(hexparser, test_start_segment_address_record_identification)
+{
+ 
+    const char * data_record = ":040000031000419513";
+    hexparser_parse_string(data_record, strlen(data_record), &record);
+
+    LONGS_EQUAL(START_SEGMENT_ADDRESS_RECORD, record.type);
+}
+
 TEST(hexparser, test_extended_end_of_file_identification)
 {
     const char * data_record = ":00000001FF";
@@ -138,6 +147,19 @@ TEST(hexparser, test_data_parsing)
     LONGS_EQUAL(0x00010EB8, record.data.words[3]); 
 }
 
+TEST(hexparser, test_extended_segment_address_record_parsing)
+{
+    const char * hexline = ":020000021000EC";
+
+    hexparser_parse_string(hexline, strlen(hexline), &record);
+
+    LONGS_EQUAL(EXTENDED_SEGMENT_ADDRESS_RECORD, record.type);
+    LONGS_EQUAL(0x02, record.byte_count);
+    LONGS_EQUAL(0x0, record.address);
+    LONGS_EQUAL(0x1000, record.data.words[0]);
+    LONGS_EQUAL(0xEC, record.checksum);
+}
+
 TEST(hexparser, test_set_extended_address_record_parsing)
 {
     const char * data_record = ":020000041000EA";
@@ -157,7 +179,27 @@ TEST(hexparser, test_is_valid)
 
     LONGS_EQUAL(true, hexparser_is_record_valid(&record));
 
+    data_record = ":040000031000419513";
+    hexparser_parse_string(data_record, strlen(data_record), &record);
+
+    LONGS_EQUAL(true, hexparser_is_record_valid(&record));
+
+    data_record = ":104000000040002095410100D5410100D741010049";
+    hexparser_parse_string(data_record, strlen(data_record), &record);
+
+    LONGS_EQUAL(true, hexparser_is_record_valid(&record));
+
+    data_record = ":1040B0000000000000000000000000000000000000";
+    hexparser_parse_string(data_record, strlen(data_record), &record);
+
+    LONGS_EQUAL(true, hexparser_is_record_valid(&record));
+
     data_record = ":100110002146017EB7C20001FF5F16002148011988";
+    hexparser_parse_string(data_record, strlen(data_record), &record);
+
+    LONGS_EQUAL(true, hexparser_is_record_valid(&record));
+
+    data_record = ":040000032000019543";
     hexparser_parse_string(data_record, strlen(data_record), &record);
 
     LONGS_EQUAL(true, hexparser_is_record_valid(&record));

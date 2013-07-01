@@ -85,7 +85,18 @@ uint32_t hexparser_parse_string(const char * record_string, uint8_t length, hexp
             break;
 
         case EXTENDED_LINEAR_ADDRESS_RECORD:
+        case EXTENDED_SEGMENT_ADDRESS_RECORD:
             record->data.words[0] = uint16_from_hex_char(&record_string[9]);
+            break;
+
+        case START_SEGMENT_ADDRESS_RECORD:
+            for (uint8_t i = 0; i < (record->byte_count / 4); i++) 
+            {
+                record->data.words[i] = data_uint32_from_hex_char(&record_string[9+i*8]);
+            }
+            break;
+
+        default:
             break;
     }
 
@@ -94,8 +105,6 @@ uint32_t hexparser_parse_string(const char * record_string, uint8_t length, hexp
 
 bool hexparser_is_record_valid(hexparser_record * record)
 {
-    uint8_t * bytes = (uint8_t *) record;
-
     uint8_t sum = 0;
     sum += record->byte_count;
     sum += record->address & 0x00FF;
@@ -107,5 +116,5 @@ bool hexparser_is_record_valid(hexparser_record * record)
         sum += record->data.bytes[i];
     }
 
-    return (record->checksum == (0x100 - sum));
+    return (record->checksum == ((0x100 - sum) & 0xFF));
 }
